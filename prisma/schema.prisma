@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                           String               @id
+  email                        String               @unique
+  name                         String?
+  lastName                     String?
+  tokens                       Int
+  role                         Role                 @default(PATIENT)
+  medicalAppointmentsAsPatient MedicalAppointment[] @relation("PatientAppointments")
+  medicalAppointmentsAsDoctor  MedicalAppointment[] @relation("DoctorAppointments")
+  movements                    Movement[]
+  notifcations                 Notification[]
+  profileImage                 String?
+  rating                       Int
+  enabled                      Boolean
+  createdAt                    DateTime             @default(now())
+  updatedAt                    DateTime             @default(now())
+}
+
+model MedicalAppointment {
+  id                String            @id
+  roomUrl           String
+  symptoms          String
+  diagnosis         String?
+  treatment         String?
+  observations      String?
+  recommendations   String?
+  patientComments   String?
+  rating            Int
+  date              DateTime
+  patientId         String
+  patient           User              @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctorId          String
+  doctor            User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  appointmentStatus AppointmentStatus
+  medicalExams      MedicalExams[]
+  iaObservation     IaObservation? // Back relation (no fields/references here)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @default(now())
+}
+
+model IaObservation {
+  id                   String             @id @default(uuid())
+  medicalAppointment   MedicalAppointment @relation(fields: [medicalAppointmentId], references: [id]) // Defines the relation
+  medicalAppointmentId String             @unique // Foreign key (required and unique)
+  preliminaryAnalysis  String // Análisis preliminar generado por la IA
+  possibleDiseases     String[] // Lista de enfermedades posibles según el análisis
+  riskAssessment       RiskLevel // Evaluación del riesgo (Bajo, Medio, Alto)
+  suggestedActions     String[] // Acciones sugeridas por la IA
+  symptomsDetected     String[] // Lista de síntomas identificados por la IA
+  severityScore        Int // Escala de severidad de 0 a 10
+  standardizedTags     String[] // Tags estandarizados para estadísticas (ej: "gripe", "fiebre")
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @default(now())
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Notification {
+  id          String   @id
+  title       String
+  description String
+  redirect    String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+}
+
+model MedicalExams {
+  id                   String             @id
+  url                  String
+  medicalAppointmentId String
+  medicalAppointment   MedicalAppointment @relation(fields: [medicalAppointmentId], references: [id])
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @default(now())
+}
+
+model Movement {
+  id        String       @id
+  quantity  Int
+  type      MovementType
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now())
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum MovementType {
+  USAGE
+  PURCHASE
+  REFUND
+}
+
+enum AppointmentStatus {
+  CANCELLED
+  SCHEDULED
+  COMPLETED
+  ONGOING
+  RESCHEDULED
+}
