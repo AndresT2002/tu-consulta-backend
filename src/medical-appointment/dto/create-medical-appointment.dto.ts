@@ -6,6 +6,9 @@ import {
   IsInt,
   IsUUID,
   ValidateNested,
+  Max,
+  Min,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AppointmentStatus } from '@prisma/client';
@@ -91,6 +94,8 @@ export class CreateMedicalAppointmentDto {
   })
   @IsNotEmpty()
   @IsInt()
+  @Min(0)
+  @Max(5)
   rating: number;
 
   @ApiProperty({
@@ -102,10 +107,8 @@ export class CreateMedicalAppointmentDto {
   @Type(() => Date)
   date: Date;
 
-  @ApiProperty({
-    example: AppointmentStatus.COMPLETED,
-    required: false
-  })
+  @ApiProperty({ description: 'Estado de la cita', enum: AppointmentStatus, example: AppointmentStatus.COMPLETED })
+  @IsEnum(AppointmentStatus)
   @IsNotEmpty()
   @IsString()
   appointmentStatus: AppointmentStatus;
