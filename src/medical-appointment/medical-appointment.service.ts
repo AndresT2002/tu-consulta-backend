@@ -5,33 +5,53 @@ import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class MedicalAppointmentService {
-  constructor(private readonly prismaService: PrismaService) {}
+    constructor(private readonly prismaService: PrismaService) { }
 
-  create(createMedicalAppointmentDto: CreateMedicalAppointmentDto) {
-    return 'This action adds a new medicalAppointment';
-  }
+    create(createMedicalAppointmentDto: CreateMedicalAppointmentDto) {
 
-  findAll() {
-    return this.prismaService.medicalAppointment.findMany();
-  }
+        return this.prismaService.medicalAppointment.create({
+            data: createMedicalAppointmentDto
+        });
+    }
 
-  findOne(id: string) {
-    return this.prismaService.medicalAppointment.findUnique({
-      where: {
-        id,
-      },
-    });
-  }
+    findAll() {
+        return this.prismaService.medicalAppointment.findMany();
+    }
 
-  update(id: number, updateMedicalAppointmentDto: UpdateMedicalAppointmentDto) {
-    return `This action updates a #${id} medicalAppointment`;
-  }
+    findOne(id: string) {
+        return this.prismaService.medicalAppointment.findUnique({
+            where: {
+                id,
+            },
+        });
+    }
 
-  remove(id: string) {
-    return this.prismaService.medicalAppointment.delete({
-      where: {
-        id,
-      },
-    });
-  }
+    update(id: string, updateMedicalAppointmentDto: UpdateMedicalAppointmentDto) {
+        const { patientId, doctorId, ...updateData } = updateMedicalAppointmentDto;
+
+        return this.prismaService.medicalAppointment.update({
+            where: { id },
+            data: {
+                ...updateData,
+                ...(patientId && {
+                    patient: {
+                        connect: { id: patientId },
+                    },
+                }),
+                ...(doctorId && {
+                    doctor: {
+                        connect: { id: doctorId },
+                    },
+                }),
+            },
+        });
+    }
+
+    remove(id: string) {
+        return this.prismaService.medicalAppointment.delete({
+            where: {
+                id,
+            },
+        });
+    }
 }

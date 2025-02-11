@@ -10,12 +10,14 @@ import {
 import { MedicalAppointmentService } from './medical-appointment.service';
 import { CreateMedicalAppointmentDto } from './dto/create-medical-appointment.dto';
 import { UpdateMedicalAppointmentDto } from './dto/update-medical-appointment.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Medical Appointment')
 @Controller('medical-appointment')
 export class MedicalAppointmentController {
   constructor(
     private readonly medicalAppointmentService: MedicalAppointmentService,
-  ) {}
+  ) { }
 
   @Post()
   create(@Body() createMedicalAppointmentDto: CreateMedicalAppointmentDto) {
@@ -38,7 +40,7 @@ export class MedicalAppointmentController {
     @Body() updateMedicalAppointmentDto: UpdateMedicalAppointmentDto,
   ) {
     return this.medicalAppointmentService.update(
-      +id,
+      id,
       updateMedicalAppointmentDto,
     );
   }
